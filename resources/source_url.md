@@ -2,8 +2,8 @@
 
 - [Therapeutic Target Database](https://db.idrblab.net/ttd/full-data-download)
 - [String Database](https://string-db.org/cgi/download?sessionId=bFbdEvuTGApf&species_text=Homo+sapiens)
-- [PsyGenet Database](http://www.psygenet.org/web/PsyGeNET/menu/downloads)
-- [DisGenet Database](https://www.disgenet.org/downloads)
+- [PsyGenet Database](http://www.psygenext.org/web/PsyGeNET/menu/downloads)
+- [DisGenet Database](https://www.disgenet.org/downloads) 
 - [PharmGKB](https://www.pharmgkb.org/downloads)
 - [Pathway Common Database](https://www.pathwaycommons.org/archives/)
 - [Pathbank Database](https://pathbank.org/downloads)
@@ -18,4 +18,4 @@
 - [Drug target common](https://drugtargetcommons.fimm.fi/)
 - [STITCH](http://stitch.embl.de/cgi/download.pl?UserId=AkGL5nV4ytTp&sessionId=TSJhGAc45tDP)
 - [NCATS Insxght Drug](https://drugs.ncats.io/downloads-public)
-
+- [OpenTarget](https://platform.opentargets.org/downloads)
