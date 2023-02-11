@@ -1,55 +1,47 @@
+import pyarrow as pa
+import pandas as pd
+import boto3
+import io
 import os
-import re
-from functools import wraps
-from typing import Dict, List, Tuple, Union, Callable, Any
+from dotenv import load_dotenv
 import logging
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-import findspark
-findspark.init()
+#load environment variables
+load_dotenv()
 
-from pyspark.sql import SparkSession
+def create_client():
+    """functions to create S3 client using AWS creds"""
 
-
-def get_spark_session(include_graphframes: bool = False, save_to_s3: bool = False):
-    """
-    Initializes spark session. Should only be required when not running on Databricks.
-
-    Args:
-        include_graphframes (bool): Flag to include graphframes package in
-            ``spark.jars.packages``.
-
-    Returns:
-        SparkSession: Spark session.
-    """
-
-    builder = SparkSession.builder.config(
-        "spark.driver.maxResultSize", "4g"
+    client = boto3.client(
+        's3',
+        aws_access_key_id = os.environ["ACCESS_KEY"],
+        aws_secret_access_key = os.environ["SECRET_ACCESS_KEY"]
     )
 
-    if include_graphframes:
-        builder = builder.config(
-            "spark.jars.packages", "graphframes:graphframes:0.8.0-spark3.0-s_2.12"
-        )
+    return client
 
+def read_csv(key:str, compression:str=None, sep:str=","):
 
-    spark = builder.getOrCreate()
+    #initiate clients
+    s3 = create_client()
 
-    return spark
+    #get object from s3 buckets
+    obj = s3.get_object(
+        Bucket=os.environ["BUCKET"],
+        Key=key
+    )
 
-
-def read_file(path, type, header = True):
-    spark = get_spark_session()
-    if type == "csv":
-        df = spark.read.csv(path, header = header)
-    elif type == "tsv":
-        df = spark.read.csv(path, sep = "\t", header =  header)
-    elif type == "parquet":
-        df = spark.read.csv(path, header = header)
+    if compression is not None:
+        df = pd.read_csv(obj["Body"], compression=compression, sep=sep)
+    else:
+        df = pd.read_csv(obj["Body"], sep=sep)
     
-    return df
+    table = pa.Table.from_pandas(df)
 
-    
+    return table
+
+
