@@ -1,12 +1,4 @@
 #!/bin/bash
-cleanShell() {
-  #clean shell
-  if [[ ! -z $ZSH_VERSION ]]; then
-    exec zsh
-  elif [[ ! -z $BASH_VERSION ]]; then
-    exec bash --login
-  fi
-}
 
 while getopts "s:" opt; do
   case "$opt" in
@@ -37,196 +29,116 @@ PATHWAY_COMPOUND=($PHARMGKB_PC_URL $CTD_PC_URL $CTD_GO_URL)
 PATHWAY_TARGET=($PATHBANK_PT_URL $CTD_PT_URL $REACTOME_PT_URL)
 COMPOUND_COMPOUND=($STICH_CC_URL)
 LITERATURE=($PHARMGKB_LIT_URL)
-ENTREZ=($ENTREZ_GENE_INFO_URL $ENTREZ_GENE2ACCESSION_URL $ENTREZ_GENE2ENSEMBLE_URL)
+ENTREZ=( $ENTREZ_GENE_INFO_URL $ENTREZ_GENE2ENSEMBLE_URL )
 UNIPROT=($UNIPROT_HUMAN_URL)
+HGNC=($HGNC_URL)
 
 download-data() {
-  URL=$1
-  OUTPUT_PATH=$2
   
-  FILE=$(echo $URL | rev | cut -d"/" -f 1 | rev)
-  echo "Downloading $FILE"
-  wget $URL -O $OUTPUT_PATH/$FILE
+  local SOURCE="$1"
+  local DECOMPRESS="$2"
+  shift 2
+  local ARRAY_URL=("$@")
   
-  if [[ $FILE == *".zip"* ]]; then
-    echo "Unzipping $FILE"
-    unzip -o -d $OUTPUT_PATH $OUTPUT_PATH/$FILE
-    rm $OUTPUT_PATH/$FILE
-    echo "Finished unzipping"
+  OUTPUT_PATH=./resources/downloads
+
+  mkdir -p $OUTPUT_PATH/$SOURCE
   
-  elif [[ $FILE == *".tar.gz"* ]]; then
-    echo "Unzipping $FILE"
-    tar -xvzf $OUTPUT_PATH/$FILE -C $OUTPUT_PATH
-    rm $OUTPUT_PATH/$FILE
-    echo "Finished unzipping"
+  for URL in ${ARRAY_URL[@]}; do
+    FILE=$(echo $URL | rev | cut -d"/" -f 1 | rev)
+    echo "Downloading $FILE"
+    if [[ $URL == *"uniprot"* ]]; then
+      wget $URL -O ./resources/downloads/$SOURCE/uniprot_human.tsv
+    else
+      wget $URL -O ./resources/downloads/$SOURCE/$FILE
+    fi
 
-  elif [[ $FILE == *".gz"* ]]; then
-    echo "Unzipping $FILE"
-    gunzip $OUTPUT_PATH/$FILE
-    rm $OUTPUT_PATH/$FILE
-    echo "Finished unzipping"
-  fi
-}
+    if [[ $DECOMPRESS == "true" ]]; then
+      if [[ $FILE == *".zip"* ]]; then
+        echo "Unzipping $FILE"
+        unzip -o -d $OUTPUT_PATH/$SOURCE $OUTPUT_PATH/$SOURCE/$FILE
+        rm $OUTPUT_PATH/$SOURCE/$FILE
+        echo "Finished unzipping"
+    
+      elif [[ $FILE == *".tar.gz"* ]]; then
+        echo "Unzipping $FILE"
+        tar -xvzf $OUTPUT_PATH/$SOURCE/$FILE -C $OUTPUT_PATH/$SOURCE
+        rm $OUTPUT_PATH/$SOURCE/$FILE
+        echo "Finished unzipping"
 
-create-output(){
-  PREFIX=$1
-
-  OUTPUT_PATH=./resources/downloads/$PREFIX
-  if [[ ! -d $OUTPUT_PATH ]]; then
-    mkdir $OUTPUT_PATH
-  fi
-
-  echo $OUTPUT_PATH
-}
-
-split-large-file() {
-  SOURCE=$1
-  #get path
-  OUTPUT_PATH=$(create-output $SOURCE)
-  #get all files in path
-  NEW_FILES=`ls $OUTPUT_PATH/`
-  for FILE in ${NEW_FILES[@]}; do
-    SIZE=$(stat -f %z $OUTPUT_PATH/$FILE)
-    if (( $SIZE > 50000000 )) ; then
-      echo "Splitting $FILE ..."
-      split -l 3000000 -a 3 -d $OUTPUT_PATH/$FILE $OUTPUT_PATH/$FILE
-      echo "Finished splitting $FILE"
-      echo "Remove $FILE from local"
-      rm $OUTPUT_PATH/$FILE  
+      elif [[ $FILE == *".gz"* ]]; then
+        echo "Unzipping $FILE"
+        gunzip $OUTPUT_PATH/$SOURCE/$FILE
+        rm $OUTPUT_PATH/$SOURCE/$FILE
+        echo "Finished unzipping"
+      fi
     fi
   done
 }
 
 upload-s3() {
   SOURCE=$1
-
-  OUTPUT_PATH=$(create-output $SOURCE)
+  OUTPUT_PATH=./resources/downloads
   
   #upload to S3
   aws-vault exec rosalind \
-  -- aws s3 sync $OUTPUT_PATH/ s3://rosalind-pipeline/downloads/$SOURCE/
+  -- aws s3 sync $OUTPUT_PATH/$SOURCE s3://rosalind-pipeline/downloads/$SOURCE/
 }  
 
+execute!(){
+  local SOURCE="$1"
+  local DECOMPRESS="$2"
+  shift 2
+  local ARRAY_URL=("$@")
+  
+  download-data "$SOURCE" "$DECOMPRESS" "${ARRAY_URL[@]}"
+  upload-s3 $SOURCE
+}
 
 if [[ $SOURCE == "inact" ]]; then
-  for URL in ${INACT[@]}; do
-    download-data $URL $(create-output $SOURCE)
-  done
-  upload-s3 $SOURCE
+  execute! "$SOURCE" true "${INACT[@]}" 
 elif [[ $SOURCE == "full-int" ]]; then
-  for URL in ${FULL_INT[@]}; do
-    download-data $URL $(create-output $SOURCE)
-  done
-  upload-s3 $SOURCE
+  execute! "$SOURCE" false "${FULL_INT[@]}"
 elif [[ $SOURCE == "target-disease" ]]; then
-  for URL in ${TARGET_DISEASE[@]}; do
-    download-data $URL $(create-output $SOURCE)
-  done
-  split-large-file $SOURCE
-  upload-s3 $SOURCE
+  execute! "$SOURCE" "false" "${TARGET_DISEASE[@]}" 
 elif [[ $SOURCE == "target-compound" ]]; then
-  for URL in ${TARGET_COMPOUND[@]}; do
-    download-data $URL $(create-output $SOURCE)
-  done
-  split-large-file $SOURCE
-  upload-s3 $SOURCE
+  execute! "$SOURCE" "false" "${TARGET_COMPOUND[@]}" 
 elif [[ $SOURCE == "target-target" ]]; then
-  for URL in ${TARGET_TARGET[@]}; do
-    download-data $URL $(create-output $SOURCE)
-  done
-  split-large-file $SOURCE
-  upload-s3 $SOURCE
+  execute! "$SOURCE" "false" "${TARGET_TARGET[@]}" 
 elif [[ $SOURCE == "disease-compound" ]]; then
-  for URL in ${DISEASE_COMPOUND[@]}; do
-    download-data $URL $(create-output $SOURCE)
-  done
-  split-large-file $SOURCE
-  upload-s3 $SOURCE
+  execute! "$SOURCE" "false" "${DISEASE_COMPOUND[@]}" 
 elif [[ $SOURCE == "disease-biomarker" ]]; then
-  for URL in ${DISEASE_BIOMARKER[@]}; do
-    download-data $URL $(create-output $SOURCE)
-  done
-  split-large-file $SOURCE
-  upload-s3 $SOURCE
+  execute! "$SOURCE" "false" "${DISEASE_BIOMARKER[@]}" 
 elif [[ $SOURCE == "pathway-disease" ]]; then
-  for URL in ${PATHWAY_DISEASE[@]}; do
-    download-data $URL $(create-output $SOURCE)
-  done
-  split-large-file $SOURCE
-  upload-s3 $SOURCE
+  execute! "$SOURCE" "false" "${PATHWAY_DISEASE[@]}"
 elif [[ $SOURCE == "pathway-compound" ]]; then
-  for URL in ${PATHWAY_COMPOUND[@]}; do
-    download-data $URL $(create-output $SOURCE)
-  done
-  split-large-file $SOURCE
-  upload-s3 $SOURCE
+  execute! "$SOURCE" "false" "${PATHWAY_COMPOUND[@]}"
 elif [[ $SOURCE == "pathway-target" ]]; then
-  for URL in ${PATHWAY_TARGET[@]}; do
-    download-data $URL $(create-output $SOURCE)
-  done
-  split-large-file $SOURCE
-  upload-s3 $SOURCE
+  execute! "$SOURCE" "false" "${PATHWAY_TARGET[@]}" 
 elif [[ $SOURCE == "compound-compound" ]]; then
-  for URL in ${COMPOUND_COMPOUND[@]}; do
-    download-data $URL $(create-output $SOURCE)
-  done
-  split-large-file $SOURCE
-  upload-s3 $SOURCE
+  execute! "$SOURCE" "false" "${COMPOUND_COMPOUND[@]}" 
 elif [[ $SOURCE == "literature" ]]; then
-  for URL in ${LITERATURE[@]}; do
-    download-data $URL $(create-output $SOURCE)
-  done
-  split-large-file $SOURCE
-  upload-s3 $SOURCE
+  execute! "$SOURCE" "false" "${LITERATURE[@]}" 
 elif [[ $SOURCE == "entrez" ]]; then
-  for URL in ${ENTREZ[@]}; do
-    download-data $URL $(create-output $SOURCE)
-  done
-  split-large-file $SOURCE
-  upload-s3 $SOURCE
+  execute! "$SOURCE" "false" "${ENTREZ[@]}"
 elif [[ $SOURCE == "uniprot" ]]; then
-  for URL in ${UNIPROT[@]}; do
-    download-data $URL $(create-output $SOURCE)
-  done
-  split-large-file $SOURCE
-  upload-s3 $SOURCE
+  execute! "$SOURCE" "false" "${UNIPROT[@]}"
+elif [[ $SOURCE == "hgnc" ]]; then
+  execute! "$SOURCE" "false" "${HGNC[@]}" 
 elif [[ $SOURCE == "all" ]]; then
-  for URL in ${INACT[@]}; do
-    download-data $URL $(create-output "inact")
-  done
-  for URL in ${FULL_INT[@]}; do
-    download-data $URL $(create-output "full-int")
-  done
-  for URL in ${TARGET_DISEASE[@]}; do
-    download-data $URL $(create-output "target-disease")
-  done
-  for URL in ${TARGET_COMPOUND[@]}; do
-    download-data $URL $(create-output "target-compound")
-  done
-  for URL in ${TARGET_TARGET[@]}; do
-    download-data $URL $(create-output "target-target")
-  done
-  for URL in ${DISEASE_COMPOUND[@]}; do
-    download-data $URL $(create-output "disease-compound")
-  done
-  for URL in ${DISEASE_BIOMARKER[@]}; do
-    download-data $URL $(create-output "disease-biomarker")
-  done
-  for URL in ${PATHWAY_DISEASE[@]}; do
-    download-data $URL $(create-output "pathway-disease")
-  done
-  for URL in ${PATHWAY_COMPOUND[@]}; do
-    download-data $URL $(create-output "pathway-compound")
-  done
-  for URL in ${PATHWAY_TARGET[@]}; do
-    download-data $URL $(create-output "pathway-target")
-  done
-  for URL in ${COMPOUND_COMPOUND[@]}; do
-    download-data $URL $(create-output "compound-compound")
-  done
-  for URL in ${LITERATURE[@]}; do
-    download-data $URL $(create-output "literature")
-  done
+  execute! "inact" "true" "${INACT[@]}"
+  execute! "full-int" "false" "${FULL_INT[@]}" 
+  execute! "target-disease" "false" "${TARGET_DISEASE[@]}" 
+  execute! "target-compound" "false" "${TARGET_COMPOUND[@]}" 
+  execute! "target-target" "false" "${TARGET_TARGET[@]}" 
+  execute! "disease-compound" "false" "${DISEASE_COMPOUND[@]}" 
+  execute! "disease-biomarker" "false" "${DISEASE_BIOMARKER[@]}" 
+  execute! "pathway-disease" "false" "${PATHWAY_DISEASE[@]}" 
+  execute! "pathway-compound" "false" "${PATHWAY_COMPOUND[@]}" 
+  execute! "pathway-target" "false" "${PATHWAY_TARGET[@]}" 
+  execute! "compound-compound" "false" "${COMPOUND_COMPOUND[@]}" 
+  execute! "literature" "false" "${LITERATURE[@]}" 
+  execute! "entrez" "false" "${ENTREZ[@]}" 
+  execute! "uniprot" "false" "${UNIPROT[@]}" 
+  execute! "hgnc" "false" "${HGNC[@]}" 
 fi
-
-cleanShell
