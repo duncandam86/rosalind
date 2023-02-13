@@ -1,10 +1,10 @@
-import pyarrow as pa
-import pandas as pd
-import boto3
-import io
 import os
 from dotenv import load_dotenv
 import logging
+
+import pyarrow as pa
+import pyarrow.compute as pc
+from pyarrow import fs, csv
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 logger = logging.getLogger(__name__)
@@ -13,35 +13,39 @@ logger.setLevel(logging.INFO)
 #load environment variables
 load_dotenv()
 
-def create_client():
-    """functions to create S3 client using AWS creds"""
-
-    client = boto3.client(
-        's3',
-        aws_access_key_id = os.environ["ACCESS_KEY"],
-        aws_secret_access_key = os.environ["SECRET_ACCESS_KEY"]
+def initiate_s3_filesystem():
+    s3 = fs.S3FileSystem(
+        access_key = os.environ["ACCESS_KEY"], 
+        secret_key = os.environ["SECRET_ACCESS_KEY"]
     )
 
-    return client
+    return s3
 
-def read_csv(key:str, compression:str=None, sep:str=","):
+def read(path:str, delimiter:str = ",", compression:str = "detect"):
 
-    #initiate clients
-    s3 = create_client()
+    #initiate S3FileSystem
+    s3 = initiate_s3_filesystem()
 
-    #get object from s3 buckets
-    obj = s3.get_object(
-        Bucket=os.environ["BUCKET"],
-        Key=key
-    )
-
-    if compression is not None:
-        df = pd.read_csv(obj["Body"], compression=compression, sep=sep)
-    else:
-        df = pd.read_csv(obj["Body"], sep=sep)
+    #read file
+    with s3.open_input_stream(path, compression=compression) as file:
+        table = csv.read_csv(
+            file, 
+            parse_options=csv.ParseOptions(
+                delimiter=delimiter
+            )
+        )
     
-    table = pa.Table.from_pandas(df)
-
     return table
 
-
+def explode(table, column):
+    other_columns = list(table.schema.names)
+    other_columns.remove(column)
+    
+    indices = pc.list_parent_indices(table[column])
+    result = table.select(other_columns).take(indices)
+    result = result.append_column(
+        pa.field(column, table.schema.field(column).type.value_type), 
+        pc.list_flatten(table[column])
+    )
+    
+    return result
