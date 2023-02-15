@@ -15,12 +15,12 @@ def get_gene_info(
     Return:
       PyArrow table with gene_info information
     """
-    table = utils.read(path=entrez_gene_info_path, compression="gzip", delimiter="\t")
+    table = utils.read_csv(path=entrez_gene_info_path, compression="gzip", delimiter="\t")
 
     # getting columns for new gene_info
     gene_id = table.column("GeneID")
-    name = table.column("description")
-    symbol = table.column("Symbol")
+    gene_name = table.column("description")
+    gene_symbol = table.column("Symbol")
     chromosome = table.column("chromosome")
     map_location = table.column("map_location")
     type_of_gene = table.column("type_of_gene")
@@ -36,8 +36,8 @@ def get_gene_info(
     gene_info = pa.table(
         [
             gene_id,
-            name,
-            symbol,
+            gene_name,
+            gene_symbol,
             chromosome,
             map_location,
             type_of_gene,
@@ -47,8 +47,8 @@ def get_gene_info(
         ],
         names=[
             "gene_id",
-            "name",
-            "symbol",
+            "gene_name",
+            "gene_symbol",
             "chromosome",
             "map_location",
             "type_of_gene",
@@ -88,21 +88,16 @@ def get_hgnc(hgnc_path: str) -> pa.table:
     Return
       PyArrow table contains HGNC data
     """
-    table = utils.read(path=hgnc_path, delimiter="\t")
+    table = utils.read_csv(path=hgnc_path, delimiter="\t")
 
     # select hgnc_id and symbol columns from HGNC
     hgnc_id = table.column("hgnc_id")
-    symbol = table.column("symbol")
+    gene_symbol = table.column("symbol")
 
     # load selected column HGNC table
-    hgnc = pa.table([hgnc_id, symbol], names=["hgnc_id", "symbol"])
+    hgnc = pa.table([hgnc_id, gene_symbol], names=["hgnc_id", "gene_symbol"])
 
     return hgnc
-
-
-# def get_uniprot(
-#   uniprot_hgnc
-# )
 
 
 def main():
@@ -116,6 +111,13 @@ def main():
     df_hgnc = get_hgnc(hgnc_path)
 
     # final gene table
-    df_gene = df_gene_info.join(right_table=df_hgnc, keys="symbol", use_threads=True)
+    df_gene = (
+      df_gene_info
+      .join(right_table=df_hgnc, keys="gene_symbol", use_threads=True)
+    )
 
-    return df_gene
+    #write file to s3
+    s3_path = "rosalind-pipeline/stage-0/genes.parquet"
+
+    utils.write_parquet(df_gene, s3_path)
+
