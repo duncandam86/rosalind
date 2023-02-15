@@ -1,8 +1,9 @@
 #!/bin/bash
 
-while getopts "s:" opt; do
+while getopts "s:a:" opt; do
   case "$opt" in
   s) SOURCE=$OPTARG ;;
+  a) ACTION=$OPTARG ;;
   esac
 done
 
@@ -83,7 +84,7 @@ upload-s3() {
   echo "Uploading $SOURCE to S3"
   #upload to S3
   aws-vault exec rosalind \
-  -- aws s3 sync $OUTPUT_PATH/$SOURCE s3://rosalind-pipeline/downloads/$SOURCE/
+  -- aws s3 sync $OUTPUT_PATH/$SOURCE s3://rosalind-pipeline/downloads/$SOURCE/ --delete
   echo "Finished uploading $SOURCE"
 }  
 
@@ -93,54 +94,60 @@ execute!(){
   shift 2
   local ARRAY_URL=("$@")
   
-  download-data "$SOURCE" "$DECOMPRESS" "${ARRAY_URL[@]}"
-  upload-s3 $SOURCE
+  if [[ -z $ACTION ]]; then
+    download-data "$SOURCE" "$DECOMPRESS" "${ARRAY_URL[@]}"
+    upload-s3 $SOURCE
+  elif [[ $ACTION = "download" ]]; then
+    download-data "$SOURCE" "$DECOMPRESS" "${ARRAY_URL[@]}"
+  elif [[ $ACTION = "upload" ]]; then
+    upload-s3 $SOURCE
+  fi
 }
 
 if [[ $SOURCE == "inact" ]]; then
   execute! "$SOURCE" true "${INACT[@]}" 
 elif [[ $SOURCE == "full-int" ]]; then
-  execute! "$SOURCE" false "${FULL_INT[@]}"
+  execute! "$SOURCE" true "${FULL_INT[@]}"
 elif [[ $SOURCE == "target-disease" ]]; then
-  execute! "$SOURCE" "false" "${TARGET_DISEASE[@]}" 
+  execute! "$SOURCE" false "${TARGET_DISEASE[@]}" 
 elif [[ $SOURCE == "target-compound" ]]; then
-  execute! "$SOURCE" "false" "${TARGET_COMPOUND[@]}" 
+  execute! "$SOURCE" false "${TARGET_COMPOUND[@]}" 
 elif [[ $SOURCE == "target-target" ]]; then
-  execute! "$SOURCE" "false" "${TARGET_TARGET[@]}" 
+  execute! "$SOURCE" false "${TARGET_TARGET[@]}" 
 elif [[ $SOURCE == "disease-compound" ]]; then
-  execute! "$SOURCE" "false" "${DISEASE_COMPOUND[@]}" 
+  execute! "$SOURCE" false "${DISEASE_COMPOUND[@]}" 
 elif [[ $SOURCE == "disease-biomarker" ]]; then
-  execute! "$SOURCE" "false" "${DISEASE_BIOMARKER[@]}" 
+  execute! "$SOURCE" false "${DISEASE_BIOMARKER[@]}" 
 elif [[ $SOURCE == "pathway-disease" ]]; then
-  execute! "$SOURCE" "false" "${PATHWAY_DISEASE[@]}"
+  execute! "$SOURCE" false "${PATHWAY_DISEASE[@]}"
 elif [[ $SOURCE == "pathway-compound" ]]; then
-  execute! "$SOURCE" "false" "${PATHWAY_COMPOUND[@]}"
+  execute! "$SOURCE" false "${PATHWAY_COMPOUND[@]}"
 elif [[ $SOURCE == "pathway-target" ]]; then
-  execute! "$SOURCE" "false" "${PATHWAY_TARGET[@]}" 
+  execute! "$SOURCE" false "${PATHWAY_TARGET[@]}" 
 elif [[ $SOURCE == "compound-compound" ]]; then
-  execute! "$SOURCE" "false" "${COMPOUND_COMPOUND[@]}" 
+  execute! "$SOURCE" false "${COMPOUND_COMPOUND[@]}" 
 elif [[ $SOURCE == "literature" ]]; then
-  execute! "$SOURCE" "false" "${LITERATURE[@]}" 
+  execute! "$SOURCE" false "${LITERATURE[@]}" 
 elif [[ $SOURCE == "entrez" ]]; then
-  execute! "$SOURCE" "false" "${ENTREZ[@]}"
+  execute! "$SOURCE" false "${ENTREZ[@]}"
 elif [[ $SOURCE == "uniprot" ]]; then
-  execute! "$SOURCE" "false" "${UNIPROT[@]}"
+  execute! "$SOURCE" false "${UNIPROT[@]}"
 elif [[ $SOURCE == "hgnc" ]]; then
-  execute! "$SOURCE" "false" "${HGNC[@]}" 
+  execute! "$SOURCE" false "${HGNC[@]}" 
 elif [[ $SOURCE == "all" ]]; then
-  execute! "inact" "true" "${INACT[@]}"
-  execute! "full-int" "false" "${FULL_INT[@]}" 
-  execute! "target-disease" "false" "${TARGET_DISEASE[@]}" 
-  execute! "target-compound" "false" "${TARGET_COMPOUND[@]}" 
-  execute! "target-target" "false" "${TARGET_TARGET[@]}" 
-  execute! "disease-compound" "false" "${DISEASE_COMPOUND[@]}" 
-  execute! "disease-biomarker" "false" "${DISEASE_BIOMARKER[@]}" 
-  execute! "pathway-disease" "false" "${PATHWAY_DISEASE[@]}" 
-  execute! "pathway-compound" "false" "${PATHWAY_COMPOUND[@]}" 
-  execute! "pathway-target" "false" "${PATHWAY_TARGET[@]}" 
-  execute! "compound-compound" "false" "${COMPOUND_COMPOUND[@]}" 
-  execute! "literature" "false" "${LITERATURE[@]}" 
-  execute! "entrez" "false" "${ENTREZ[@]}" 
-  execute! "uniprot" "false" "${UNIPROT[@]}" 
-  execute! "hgnc" "false" "${HGNC[@]}" 
+  execute! "inact" true "${INACT[@]}"
+  execute! "full-int" true "${FULL_INT[@]}" 
+  execute! "target-disease" false "${TARGET_DISEASE[@]}" 
+  execute! "target-compound" false "${TARGET_COMPOUND[@]}" 
+  execute! "target-target" false "${TARGET_TARGET[@]}" 
+  execute! "disease-compound" false "${DISEASE_COMPOUND[@]}" 
+  execute! "disease-biomarker" false "${DISEASE_BIOMARKER[@]}" 
+  execute! "pathway-disease" false "${PATHWAY_DISEASE[@]}" 
+  execute! "pathway-compound" false "${PATHWAY_COMPOUND[@]}" 
+  execute! "pathway-target" false "${PATHWAY_TARGET[@]}" 
+  execute! "compound-compound" false "${COMPOUND_COMPOUND[@]}" 
+  execute! "literature" false "${LITERATURE[@]}" 
+  execute! "entrez" false "${ENTREZ[@]}" 
+  execute! "uniprot" false "${UNIPROT[@]}" 
+  execute! "hgnc" false "${HGNC[@]}" 
 fi
