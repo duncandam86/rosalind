@@ -15,7 +15,9 @@ def get_gene_info(
     Return:
       PyArrow table with gene_info information
     """
-    table = utils.read_csv(path=entrez_gene_info_path, compression="gzip", delimiter="\t")
+    table = utils.read_csv(
+        path=entrez_gene_info_path, compression="gzip", delimiter="\t"
+    )
 
     # getting columns for new gene_info
     gene_id = table.column("GeneID")
@@ -100,7 +102,7 @@ def get_hgnc(hgnc_path: str) -> pa.table:
     return hgnc
 
 
-def main():
+def run():
     entrez_gene_info_path = (
         "rosalind-pipeline/downloads/entrez/Homo_sapiens.gene_info.gz"
     )
@@ -111,13 +113,11 @@ def main():
     df_hgnc = get_hgnc(hgnc_path)
 
     # final gene table
-    df_gene = (
-      df_gene_info
-      .join(right_table=df_hgnc, keys="gene_symbol", use_threads=True)
+    df_gene = df_gene_info.join(
+        right_table=df_hgnc, keys="gene_symbol", use_threads=True
     )
 
-    #write file to s3
+    # write file to s3
     s3_path = "rosalind-pipeline/stage-0/genes.parquet"
 
     utils.write_parquet(df_gene, s3_path)
-
