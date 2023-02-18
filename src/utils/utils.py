@@ -3,11 +3,11 @@ from dotenv import load_dotenv
 import logging
 from typing import List, Union, Tuple
 
+import pandas as pd
 import pyarrow as pa
 import pyarrow.compute as pc
 import pyarrow.parquet as pq
 from pyarrow import fs, csv
-
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 logger = logging.getLogger(__name__)
@@ -36,6 +36,7 @@ def read_csv(
     skip_rows: int = 0,
     skip_rows_after_names: int = 0,
     filesystem=initiate_s3_filesystem(),
+    read_mode="pyarrow",
 ):
     """
     Function to read csv file
@@ -46,20 +47,24 @@ def read_csv(
     with filesystem.open_input_stream(
         f"{bucket}/{path}", compression=compression
     ) as file:
-        table = csv.read_csv(
-            file,
-            parse_options=csv.ParseOptions(delimiter=delimiter),
-            read_options=csv.ReadOptions(
-                skip_rows=skip_rows, skip_rows_after_names=skip_rows_after_names
-            ),
-        )
+        if read_mode == "pyarrow":
+            table = csv.read_csv(
+                file,
+                parse_options=csv.ParseOptions(delimiter=delimiter),
+                read_options=csv.ReadOptions(
+                    skip_rows=skip_rows, skip_rows_after_names=skip_rows_after_names
+                ),
+            )
+        else:
+            df = pd.read_csv(file, sep=delimiter)
+            table = pa.table(df)
 
     return table
 
 
 def read_parquet(
     path: str,
-    file_system: fs.FileSystem,
+    filesystem: fs.FileSystem = initiate_s3_filesystem(),
     columns: List[str] = None,
     filters: Union[List[Tuple], List[List[Tuple]]] = None,
     use_threads: bool = True,
