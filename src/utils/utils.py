@@ -28,16 +28,31 @@ def initiate_s3_filesystem():
     return s3
 
 
-def read_csv(path: str, delimiter: str = ",", compression: str = "detect"):
+def read_csv(
+    path: str,
+    bucket: str = os.environ["BUCKET"],
+    compression: str = "detect",
+    delimiter: str = ",",
+    skip_rows: int = 0,
+    skip_rows_after_names: int = 0,
+    filesystem=initiate_s3_filesystem(),
+):
     """
     Function to read csv file
     """
-    # initiate S3FileSystem
-    s3 = initiate_s3_filesystem()
 
     # read file
-    with s3.open_input_stream(path, compression=compression) as file:
-        table = csv.read_csv(file, parse_options=csv.ParseOptions(delimiter=delimiter))
+
+    with filesystem.open_input_stream(
+        f"{bucket}/{path}", compression=compression
+    ) as file:
+        table = csv.read_csv(
+            file,
+            parse_options=csv.ParseOptions(delimiter=delimiter),
+            read_options=csv.ReadOptions(
+                skip_rows=skip_rows, skip_rows_after_names=skip_rows_after_names
+            ),
+        )
 
     return table
 
@@ -52,9 +67,11 @@ def read_parquet(
     """
     Function to read parquet table/file
     """
+    bucket = os.environ["BUCKET"]
+
     # read parquet file
     table = pq.read_table(
-        source=path,
+        source=f"{bucket}/{path}",
         filesystem=filesystem,
         columns=columns,
         filters=filters,
@@ -73,9 +90,14 @@ def write_parquet(
     """
     Function to write table to parquet file
     """
+    bucket = os.environ["BUCKET"]
+
     # write table to s3 as parquet file
     pq.write_table(
-        table=table, where=path, row_group_size=row_group_size, filesystem=filesystem
+        table=table,
+        where=f"{bucket}/{path}",
+        row_group_size=row_group_size,
+        filesystem=filesystem,
     )
 
 

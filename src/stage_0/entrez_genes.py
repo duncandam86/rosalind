@@ -103,10 +103,8 @@ def get_hgnc(hgnc_path: str) -> pa.table:
 
 
 def run():
-    entrez_gene_info_path = (
-        "rosalind-pipeline/downloads/entrez/Homo_sapiens.gene_info.gz"
-    )
-    hgnc_path = "rosalind-pipeline/downloads/hgnc/gene_with_protein_product.txt"
+    entrez_gene_info_path = "downloads/entrez/Homo_sapiens.gene_info.gz"
+    hgnc_path = "downloads/hgnc/gene_with_protein_product.txt"
 
     # load tables
     df_gene_info = get_gene_info(entrez_gene_info_path)
@@ -118,6 +116,6 @@ def run():
     )
 
     # write file to s3
-    s3_path = "rosalind-pipeline/stage-0/genes.parquet"
+    s3_path = "stage-0/entrez_genes.parquet"
 
     utils.write_parquet(df_gene, s3_path)

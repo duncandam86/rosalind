@@ -51,11 +51,11 @@ def get_uniprot(uniprot_path: str) -> pa.table:
 
 
 def run():
-    uniprot_path = "rosalind-pipeline/downloads/uniprot/uniprot_human.tsv"
+    uniprot_path = "downloads/uniprot/uniprot_human.tsv"
 
     uniprot = get_uniprot(uniprot_path)
 
     # write file to s3
-    otuput_path = "rosalind-pipeline/stage-0/proteins.parquet"
+    output_path = "stage-0/uniprot_proteins.parquet"
 
     utils.write_parquet(uniprot, output_path)

@@ -15,6 +15,7 @@ def run_pipeline_stage(stage: str, step: str):
         "0": {
             "entrez_genes": "entrez_genes.run",
             "uniprot_proteins": "uniprot_proteins.run",
+            "ctd_target_disease": "ctd_target_disease.run"
         }
     }
 
