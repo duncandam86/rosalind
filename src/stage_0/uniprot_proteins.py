@@ -14,37 +14,30 @@ def get_uniprot(uniprot_path: str) -> pa.table:
       PyArrow table for uniprot
     """
 
-    table = utils.read_csv(path=uniprot_path, delimiter="\t")
-
-    # get selected column
-    uniprot_id = table.column("Entry")
-    uniprot_entry_name = table.column("Entry Name")
-    protein_name = table.column("Protein names")
-    reviewed = table.column("Reviewed")
-    length = table.column("Length")
-    gene_symbol = table.column("Gene Names (primary)")
-    pathway = table.column("Pathway")
-
-    # create uniprot dataframe
-    df_uniprot = pa.table(
-        [
-            uniprot_id,
-            uniprot_entry_name,
-            protein_name,
-            reviewed,
-            length,
-            gene_symbol,
-            pathway,
-        ],
-        names=[
-            "uniprot_id",
-            "uniprot_entry_name",
-            "protein_name",
-            "reviewed",
-            "length",
-            "gene_symbol",
-            "pathway",
-        ],
+    df_uniprot = (
+        utils.read_csv(path=uniprot_path, delimiter="\t")
+        .select(
+            [
+                "Entry",
+                "Entry Name",
+                "Protein names",
+                "Reviewed",
+                "Length",
+                "Gene Names (primary)",
+                "Pathway",
+            ]
+        )
+        .rename_columns(
+            [
+                "uniprot_id",
+                "uniprot_entry_name",
+                "protein_name",
+                "reviewed",
+                "length",
+                "gene_symbol",
+                "pathway",
+            ]
+        )
     )
 
     return df_uniprot

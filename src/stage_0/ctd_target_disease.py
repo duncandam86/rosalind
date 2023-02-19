@@ -14,26 +14,22 @@ def ctd_target_disease(
         delimiter="\t",
         skip_rows=27,
         skip_rows_after_names=1,
-        # bucket="./resources",
-        # filesystem=fs.LocalFileSystem()
+        bucket="./resources",
+        filesystem=fs.LocalFileSystem(),
     )
 
     # filter direct evidence is not empty
-    ctd_gene_disease_direct = ctd_gene_disease.filter(
-        pc.not_equal(pc.field("DirectEvidence"), "")
+    ctd_gene_disease_direct = (
+        ctd_gene_disease.filter(pc.not_equal(pc.field("DirectEvidence"), ""))
+        .select(["GeneID", "DiseaseID", "DirectEvidence", "PubMedIDs"])
+        .rename_columns(["gene_id", "disease_id", "evidence", "pubmed_evidence"])
     )
 
-    # select columns
-    gene_id = ctd_gene_disease_direct.column("GeneID")
-    disease_id = ctd_gene_disease_direct.column("DiseaseID")
-    evidence = ctd_gene_disease_direct.column("DirectEvidence")
-    pubmed_evidence = ctd_gene_disease_direct.column("PubMedIDs")
+    #reformat disease_id
+    disease_id = pc.replace_substring(ctd_gene_disease_direct.column("disease_id"), ":", "_")
 
-    # create new table
-    ctd_gene_disease_direct = pa.table(
-        [gene_id, disease_id, evidence, pubmed_evidence],
-        names=["gene_id", "disease_id", "evidence", "pubmed_evidence"],
-    )
+    #append new disease_id column
+    ctd_gene_disease_direct.drop(["disease_id"]).append_column("disease_id", disease_id)
 
     return ctd_gene_disease_direct
 

@@ -6,37 +6,37 @@ from ..utils import utils
 
 
 def psygene_target_disease(psygene_path: str):
-    psygene_target_disease = utils.read_csv(
-        psygene_path, delimiter="\t", compression="gzip", read_mode="pandas"
+    psygene_target_disease = (
+        utils.read_csv(
+            psygene_path, delimiter="\t", compression="gzip", read_mode="pandas"
+        )
+        .select(
+            [
+                "psygenet_v02.txt",
+                "Disease_Id",
+                "PsychiatricDisorder",
+                "Number_of_Abstracts",
+                "Number_of_AbstractsValidated",
+                "Score",
+            ]
+        )
+        .rename_columns(
+            [
+                "gene_id",
+                "disease_id",
+                "psychiatric_disorder",
+                "evidence",
+                "validated_evidence",
+                "score",
+            ]
+        )
     )
 
-    # select columns
-    gene_id = psygene_target_disease.column("psygenet_v02.txt")
-    disease_id = psygene_target_disease.column("Disease_Id")
-    psychiatric_disorder = psygene_target_disease.column("PsychiatricDisorder")
-    evidence = psygene_target_disease.column("Number_of_Abstracts")
-    validated_evidence = psygene_target_disease.column("Number_of_AbstractsValidated")
-    score = psygene_target_disease.column("Score")
+    #format disease_id
+    disease_id = pc.replace_substring(psygene_target_disease.column("disease_id"), "umls:", "UMLS_")
 
-    # create new table
-    psygene_target_disease = pa.table(
-        [
-            gene_id,
-            disease_id,
-            psychiatric_disorder,
-            evidence,
-            validated_evidence,
-            score,
-        ],
-        names=[
-            "gene_id",
-            "disease_id",
-            "psychiatric_disorder",
-            "evidence",
-            "validated_evidence",
-            "score",
-        ],
-    )
+    #replace column
+    psygene_target_disease = psygene_target_disease.drop(["disease_id"]).append_column("disease_id", disease_id)
 
     return psygene_target_disease
 

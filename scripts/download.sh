@@ -84,7 +84,7 @@ upload-s3() {
   echo "Uploading $SOURCE to S3"
   #upload to S3
   aws-vault exec rosalind \
-  -- aws s3 sync $OUTPUT_PATH/$SOURCE s3://rosalind-pipeline/downloads/$SOURCE/ --delete
+  -- aws s3 sync $OUTPUT_PATH/$SOURCE s3://rosalind-pipeline/downloads/$SOURCE/
   echo "Finished uploading $SOURCE"
 }  
 

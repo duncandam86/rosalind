@@ -33,6 +33,7 @@ def read_csv(
     bucket: str = os.environ["BUCKET"],
     compression: str = "detect",
     delimiter: str = ",",
+    column_names: List[str] = [],
     skip_rows: int = 0,
     skip_rows_after_names: int = 0,
     filesystem=initiate_s3_filesystem(),
@@ -52,11 +53,19 @@ def read_csv(
                 file,
                 parse_options=csv.ParseOptions(delimiter=delimiter),
                 read_options=csv.ReadOptions(
-                    skip_rows=skip_rows, skip_rows_after_names=skip_rows_after_names
+                    column_names=column_names,
+                    skip_rows=skip_rows,
+                    skip_rows_after_names=skip_rows_after_names,
                 ),
             )
         else:
-            df = pd.read_csv(file, sep=delimiter)
+            if len(column_names) == 0:
+                df = pd.read_csv(file, sep=delimiter, skiprows=skip_rows)
+            else:
+                df = pd.read_csv(
+                    file, sep=delimiter, skiprows=skip_rows, names=column_names
+                )
+
             table = pa.table(df)
 
     return table
