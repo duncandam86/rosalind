@@ -33,6 +33,7 @@ LITERATURE=($PHARMGKB_LIT_URL)
 ENTREZ=( $ENTREZ_GENE_INFO_URL $ENTREZ_GENE2ENSEMBLE_URL )
 UNIPROT=($UNIPROT_HUMAN_URL)
 HGNC=($HGNC_URL)
+TTD=($TTD_TARGET_URL)
 
 download-data() {
   
@@ -48,7 +49,7 @@ download-data() {
   for URL in ${ARRAY_URL[@]}; do
     FILE=$(echo $URL | rev | cut -d"/" -f 1 | rev)
     echo "Downloading $FILE"
-    if [[ $URL == *"uniprot"* ]]; then
+    if [[ $URL == *"uniprotkb"* ]]; then
       wget $URL -O ./resources/downloads/$SOURCE/uniprot_human.tsv
     else
       wget $URL -O ./resources/downloads/$SOURCE/$FILE
@@ -84,7 +85,7 @@ upload-s3() {
   echo "Uploading $SOURCE to S3"
   #upload to S3
   aws-vault exec rosalind \
-  -- aws s3 sync $OUTPUT_PATH/$SOURCE s3://rosalind-pipeline/downloads/$SOURCE/
+  -- aws s3 sync $OUTPUT_PATH/$SOURCE s3://rosalind-pipeline/downloads/$SOURCE/ --delete
   echo "Finished uploading $SOURCE"
 }  
 
@@ -134,6 +135,8 @@ elif [[ $SOURCE == "uniprot" ]]; then
   execute! "$SOURCE" false "${UNIPROT[@]}"
 elif [[ $SOURCE == "hgnc" ]]; then
   execute! "$SOURCE" false "${HGNC[@]}" 
+elif [[ $SOURCE == "ttd" ]]; then
+  execute! "$SOURCE" false "${TTD[@]}" 
 elif [[ $SOURCE == "all" ]]; then
   execute! "inact" true "${INACT[@]}"
   execute! "full-int" true "${FULL_INT[@]}" 
