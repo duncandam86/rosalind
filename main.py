@@ -17,7 +17,8 @@ def run_pipeline_stage(stage: str, step: str):
             "uniprot_proteins": "uniprot_proteins.run",
             "ctd_target_disease": "ctd_target_disease.run",
             "psygene_target_disease": "psygene_target_disease.run",
-            "ttd_target_disease": "ttd_target_disease.run"
+            "ttd_target_disease": "ttd_target_disease.run",
+            "jensenlab_target_disease":"jensenlab_target_disease.run"
         }
     }
 
