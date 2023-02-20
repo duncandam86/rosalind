@@ -32,11 +32,15 @@ def psygene_target_disease(psygene_path: str):
         )
     )
 
-    #format disease_id
-    disease_id = pc.replace_substring(psygene_target_disease.column("disease_id"), "umls:", "UMLS_")
+    # format disease_id
+    disease_id = pc.replace_substring(
+        psygene_target_disease.column("disease_id"), "umls:", "UMLS_"
+    )
 
-    #replace column
-    psygene_target_disease = psygene_target_disease.drop(["disease_id"]).append_column("disease_id", disease_id)
+    # replace column
+    psygene_target_disease = psygene_target_disease.drop(["disease_id"]).append_column(
+        "disease_id", disease_id
+    )
 
     return psygene_target_disease
 

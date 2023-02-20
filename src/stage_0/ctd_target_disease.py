@@ -25,10 +25,12 @@ def ctd_target_disease(
         .rename_columns(["gene_id", "disease_id", "evidence", "pubmed_evidence"])
     )
 
-    #reformat disease_id
-    disease_id = pc.replace_substring(ctd_gene_disease_direct.column("disease_id"), ":", "_")
+    # reformat disease_id
+    disease_id = pc.replace_substring(
+        ctd_gene_disease_direct.column("disease_id"), ":", "_"
+    )
 
-    #append new disease_id column
+    # append new disease_id column
     ctd_gene_disease_direct.drop(["disease_id"]).append_column("disease_id", disease_id)
 
     return ctd_gene_disease_direct
