@@ -6,9 +6,6 @@ import importlib
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-# from src.stage_0 import gene
-# from src.stage_0 import protein
-
 
 def run_pipeline_stage(stage: str, step: str):
     STAGE_STEP = {
