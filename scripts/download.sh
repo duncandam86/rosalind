@@ -17,7 +17,7 @@ source .env
 INACT=($INACT_AZ_URL $INACT_CANCER_URL $INACT_CORONA_URL $INACT_CROHN_URL
        $INACT_DIABETES_URL $INACT_IBD_URL $INACT_PARKINSON_URL $INACT_HUNTINGTON_URL 
        $INACT_RARE_URL $INACT_NEURODEGEN_URL $INACT_NEURODEVE_URL)
-FULL_INT=($PHARMGKB_URL $DISGEN_URL)
+FULL_INT=($PHARMGKB_URL)
 TARGET_DISEASE=($TDD_TD_URL $PSYGENE_TD_URL $CTD_TD_URL $JENSEN_TD_TEM_URL $JENSEN_TD_KNO_URL $JENSEN_TD_EXP_URL)
 TARGET_COMPOUND=($TTD_TC_URL_MOA $TTD_TC_URL_ACT $DGI_TC_URL
                  $CTD_TC_URL $BINDING_TC_CURATED_URL $BINDING_TC_PATENT_URL
@@ -34,6 +34,7 @@ ENTREZ=( $ENTREZ_GENE_INFO_URL $ENTREZ_GENE2ENSEMBLE_URL $ENTREZ_GENE2ACCESSION_
 UNIPROT=($UNIPROT_HUMAN_URL)
 HGNC=($HGNC_URL)
 TTD=($TTD_TARGET_URL)
+DISGENET=($DISGEN_URL)
 
 download-data() {
   
@@ -51,6 +52,9 @@ download-data() {
     echo "Downloading $FILE"
     if [[ $URL == *"uniprotkb"* ]]; then
       wget $URL -O ./resources/downloads/$SOURCE/uniprot_human.tsv
+    elif [[ $URL == *"disgenet"* ]]; then
+      wget $URL -O ./resources/downloads/$SOURCE/disgenet_2020.db.gz
+      FILE=disgenet_2020.db.gz
     else
       wget $URL -O ./resources/downloads/$SOURCE/$FILE
     fi
@@ -109,6 +113,8 @@ if [[ $SOURCE == "inact" ]]; then
   execute! "$SOURCE" true "${INACT[@]}" 
 elif [[ $SOURCE == "full-int" ]]; then
   execute! "$SOURCE" true "${FULL_INT[@]}"
+elif [[ $SOURCE == "disgenet" ]]; then
+  execute! "$SOURCE" true "${DISGENET[@]}"
 elif [[ $SOURCE == "target-disease" ]]; then
   execute! "$SOURCE" false "${TARGET_DISEASE[@]}" 
 elif [[ $SOURCE == "target-compound" ]]; then

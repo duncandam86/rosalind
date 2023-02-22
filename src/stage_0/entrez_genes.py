@@ -114,19 +114,30 @@ def get_gene_accession(entrez_accession_path: str):
 
     # filter for human
     gene_accession = (
-        gene_accession.filter((pc.field("#tax_id") == 9606) & (pc.field("protein_accession.version") != "-"))
+        gene_accession.filter(
+            (pc.field("#tax_id") == 9606)
+            & (pc.field("protein_accession.version") != "-")
+        )
         .select(["GeneID", "protein_accession.version"])
         .rename_columns(["gene_id", "protein_accession"])
     ).to_pandas()
 
-    #using pandas to group by column to get a list of protein accession for each gene
-    gene_accession = gene_accession.groupby("gene_id")["protein_accession"].unique().reset_index(name="protein_accession")
-    #recreate pyarrow table
+    # using pandas to group by column to get a list of protein accession for each gene
+    gene_accession = (
+        gene_accession.groupby("gene_id")["protein_accession"]
+        .unique()
+        .reset_index(name="protein_accession")
+    )
+    # recreate pyarrow table
     gene_accession = pa.table(gene_accession)
-    #process protein_accession pyarrow column into string seperated by |
-    protein_accession = pa.array(["|".join(l) for l in gene_accession.column("protein_accession").to_pylist()])
-    #add new protein_accession column back to pyarrow table
-    gene_accession = gene_accession.drop(["protein_accession"]).append_column("protein_accession", protein_accession)
+    # process protein_accession pyarrow column into string seperated by |
+    protein_accession = pa.array(
+        ["|".join(l) for l in gene_accession.column("protein_accession").to_pylist()]
+    )
+    # add new protein_accession column back to pyarrow table
+    gene_accession = gene_accession.drop(["protein_accession"]).append_column(
+        "protein_accession", protein_accession
+    )
 
     return gene_accession
 
@@ -144,9 +155,7 @@ def run():
     # final gene table
     df_gene = df_gene_info.join(
         right_table=df_hgnc, keys="gene_symbol", use_threads=True
-    ).join(
-        right_table=df_accession, keys="gene_id", use_threads=True
-    )
+    ).join(right_table=df_accession, keys="gene_id", use_threads=True)
 
     # write file to s3
     s3_path = "stage-0/entrez_genes.parquet"

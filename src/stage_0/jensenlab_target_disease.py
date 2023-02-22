@@ -85,31 +85,33 @@ def jensen_experiment_target_disease(experiment_target_disease_path: str):
 
     return experiment_target_disease
 
-def get_entrez_gene(
-  entrez_gene_path:str
-):
-    entrez_genes = utils.read_parquet(
-      entrez_gene_path
-    )
 
-    #gene_id and symbol
+def get_entrez_gene(entrez_gene_path: str):
+    entrez_genes = utils.read_parquet(entrez_gene_path)
+
+    # gene_id and symbol
     gene_id_symbol = entrez_genes.select(["gene_id", "gene_symbol"])
-    #gene_id and alternative symbols
+    # gene_id and alternative symbols
     gene_id_alt_symbol = entrez_genes.select(["gene_id", "alternative_symbols"])
-    gene_symbol = pc.split_pattern(gene_id_alt_symbol.column("alternative_symbols"), "|")
-    gene_id_alt_symbol = gene_id_alt_symbol.drop(["alternative_symbols"]).append_column("gene_symbol", gene_symbol)
+    gene_symbol = pc.split_pattern(
+        gene_id_alt_symbol.column("alternative_symbols"), "|"
+    )
+    gene_id_alt_symbol = gene_id_alt_symbol.drop(["alternative_symbols"]).append_column(
+        "gene_symbol", gene_symbol
+    )
     gene_id_alt_symbol = utils.explode(gene_id_alt_symbol, "gene_symbol")
-    #gene_id and accession
+    # gene_id and accession
     gene_id_accession = entrez_genes.select(["gene_id", "protein_accession"])
     gene_symbol = pc.split_pattern(gene_id_accession.column("protein_accession"), "|")
-    gene_id_accession = gene_id_accession.drop(["protein_accession"]).append_column("gene_symbol", gene_symbol)
-    gene_id_accession = utils.explode(gene_id_accession, "gene_symbol")
-    #gene id mapping
-    genes = pa.concat_tables(
-      [gene_id_symbol, gene_id_alt_symbol, gene_id_accession]
+    gene_id_accession = gene_id_accession.drop(["protein_accession"]).append_column(
+        "gene_symbol", gene_symbol
     )
-    
+    gene_id_accession = utils.explode(gene_id_accession, "gene_symbol")
+    # gene id mapping
+    genes = pa.concat_tables([gene_id_symbol, gene_id_alt_symbol, gene_id_accession])
+
     return genes
+
 
 def run():
     knowledge_target_disease_path = (
@@ -126,7 +128,7 @@ def run():
 
     entrez_gene_path = "stage-0/entrez_genes.parquet"
 
-    #load gene mapping
+    # load gene mapping
     genes = get_entrez_gene(entrez_gene_path)
 
     # process all jensenlab target-disease data
@@ -152,10 +154,10 @@ def run():
         jensen_target_disease.column("disease_id"), ":", "_"
     )
 
-    jensen_target_disease = jensen_target_disease.drop(["disease_id"]).append_column(
-        "disease_id", disease_id
-    ).join(
-      right_table=genes, keys = "gene_symbol", use_threads=True
+    jensen_target_disease = (
+        jensen_target_disease.drop(["disease_id"])
+        .append_column("disease_id", disease_id)
+        .join(right_table=genes, keys="gene_symbol", use_threads=True)
     )
 
     # write file to s3
