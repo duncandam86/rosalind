@@ -12,11 +12,12 @@ def run_pipeline_stage(stage: str, step: str):
         "0": {
             "entrez_genes": "entrez_genes.run",
             "uniprot_proteins": "uniprot_proteins.run",
+            "disgenet":"disgenet.run",
             "ctd_target_disease": "ctd_target_disease.run",
             "psygene_target_disease": "psygene_target_disease.run",
             "ttd_target_disease": "ttd_target_disease.run",
-            "jensenlab_target_disease":"jensenlab_target_disease.run",
-            "disgenet":"disgenet.run",
+            "jensenlab_target_disease":"jensenlab_target_disease.run",   
+            "disgenet_target_disease":"disgenet_target_disease.run",
         }
     }
 

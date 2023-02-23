@@ -5,6 +5,7 @@ import pyarrow as pa
 from ..utils import utils
 from ..utils import log_utils
 
+
 def sqlite_conn(path):
     conn = sqlite3.connect(path)
 
