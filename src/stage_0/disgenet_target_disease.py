@@ -6,7 +6,6 @@ def get_disgenet_target_disease(
     disgenet_disease_attr_path: str,
     disgenet_gene_attr_path: str,
 ):
-
     # get disgenet's target disease
     target_disease = utils.read_parquet(disgenet_target_disease_path).select(
         [

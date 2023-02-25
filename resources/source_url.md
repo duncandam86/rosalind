@@ -19,3 +19,4 @@
 - [STITCH](http://stitch.embl.de/cgi/download.pl?UserId=AkGL5nV4ytTp&sessionId=TSJhGAc45tDP)
 - [NCATS Insxght Drug](https://drugs.ncats.io/downloads-public)
 - [OpenTarget](https://platform.opentargets.org/downloads)
+- [Human Interactome](http://interactome.dfci.harvard.edu/H_sapiens/index.php)

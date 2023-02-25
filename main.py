@@ -18,6 +18,7 @@ def run_pipeline_stage(stage: str, step: str):
             "ttd_target_disease": "ttd_target_disease.run",
             "jensenlab_target_disease":"jensenlab_target_disease.run",   
             "disgenet_target_disease":"disgenet_target_disease.run",
+            "human_interactome_target_target":"human_interactome_target_target.run"
         }
     }
 

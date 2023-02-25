@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 import logging
 from typing import List, Union, Tuple
+import numpy as np
 
 import pandas as pd
 import pyarrow as pa
@@ -115,7 +116,7 @@ def write_parquet(
     )
 
 
-def explode(table, column):
+def explode(table: pa.Table, column: str) -> pa.Table:
     """
     Function to explode an array table to multiple record
     """
