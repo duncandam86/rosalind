@@ -42,12 +42,12 @@ def get_uniprot(uniprot_path: str) -> pa.table:
 
     return df_uniprot
 
-
 def run():
     uniprot_path = "downloads/uniprot/uniprot_human.tsv"
 
+    #load uniprot
     uniprot = get_uniprot(uniprot_path)
-
+    
     # write file to s3
     output_path = "stage-0/uniprot_proteins.parquet"
 

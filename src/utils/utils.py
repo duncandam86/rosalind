@@ -83,7 +83,7 @@ def read_parquet(
     Function to read parquet table/file
     """
     bucket = os.environ["BUCKET"]
-
+    
     # read parquet file
     table = pq.read_table(
         source=f"{bucket}/{path}",
