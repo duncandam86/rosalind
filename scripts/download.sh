@@ -62,14 +62,15 @@ download-data() {
       wget $URL -O ./resources/downloads/$SOURCE/$FILE
     fi
 
-    if [[ $DECOMPRESS == "true" ]]; then
-      if [[ $FILE == *".zip"* ]]; then
+    if [[ $FILE == *".zip"* ]]; then
         echo "Unzipping $FILE"
         unzip -o -d $OUTPUT_PATH/$SOURCE $OUTPUT_PATH/$SOURCE/$FILE
         rm $OUTPUT_PATH/$SOURCE/$FILE
         echo "Finished unzipping"
-    
-      elif [[ $FILE == *".tar.gz"* ]]; then
+    fi
+
+    if [[ $DECOMPRESS == "true" ]]; then
+      if [[ $FILE == *".tar.gz"* ]]; then
         echo "Unzipping $FILE"
         tar -xvzf $OUTPUT_PATH/$SOURCE/$FILE -C $OUTPUT_PATH/$SOURCE
         rm $OUTPUT_PATH/$SOURCE/$FILE

@@ -109,7 +109,7 @@ def get_gene_accession(entrez_accession_path: str):
         compression="gzip",
         delimiter="\t",
         bucket="./resources",
-        filesystem=fs.LocalFileSystem(),
+        fs_type="local",
     )
 
     # filter for human

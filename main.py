@@ -20,7 +20,8 @@ def run_pipeline_stage(stage: str, step: str):
             "disgenet_target_disease":"disgenet_target_disease.run",
             "human_interactome_target_target":"human_interactome_target_target.run",
             "string_protein":"string_protein.run",
-            "string_target_target":"string_target_target.run"
+            "string_target_target":"string_target_target.run",
+            "biogrid_target_target":"biogrid_target_target.run"
         }
     }
 

@@ -18,15 +18,19 @@ logger.setLevel(logging.INFO)
 load_dotenv()
 
 
-def initiate_s3_filesystem():
+def initiate_filesystem(fs_type):
     """
     Function to initialize S3 filesystem
     """
-    s3 = fs.S3FileSystem(
-        access_key=os.environ["ACCESS_KEY"], secret_key=os.environ["SECRET_ACCESS_KEY"]
-    )
+    if fs_type == "s3":
+        sys = fs.S3FileSystem(
+            access_key=os.environ["ACCESS_KEY"],
+            secret_key=os.environ["SECRET_ACCESS_KEY"],
+        )
+    elif fs_type == "local":
+        sys = fs.LocalFileSystem()
 
-    return s3
+    return sys
 
 
 def read_csv(
@@ -37,12 +41,14 @@ def read_csv(
     column_names: List[str] = [],
     skip_rows: int = 0,
     skip_rows_after_names: int = 0,
-    filesystem=initiate_s3_filesystem(),
+    fs_type="s3",
     read_mode="pyarrow",
 ):
     """
     Function to read csv file
     """
+
+    filesystem = initiate_filesystem(fs_type)
 
     # read file
 
@@ -74,7 +80,7 @@ def read_csv(
 
 def read_parquet(
     path: str,
-    filesystem: fs.FileSystem = initiate_s3_filesystem(),
+    filesystem: fs.FileSystem = initiate_filesystem("s3"),
     columns: List[str] = None,
     filters: Union[List[Tuple], List[List[Tuple]]] = None,
     use_threads: bool = True,
@@ -83,7 +89,7 @@ def read_parquet(
     Function to read parquet table/file
     """
     bucket = os.environ["BUCKET"]
-    
+
     # read parquet file
     table = pq.read_table(
         source=f"{bucket}/{path}",
@@ -100,7 +106,7 @@ def write_parquet(
     table: pa.table,
     path: str,
     row_group_size: int = 1000000,
-    filesystem: fs.FileSystem = initiate_s3_filesystem(),
+    filesystem: fs.FileSystem = initiate_filesystem("s3"),
 ):
     """
     Function to write table to parquet file

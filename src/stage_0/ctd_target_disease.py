@@ -15,7 +15,7 @@ def ctd_target_disease(
         skip_rows=27,
         skip_rows_after_names=1,
         bucket="./resources",
-        filesystem=fs.LocalFileSystem(),
+        fs_type="local",
     )
 
     # filter direct evidence is not empty
