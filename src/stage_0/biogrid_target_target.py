@@ -15,8 +15,8 @@ def get_biogrid_target_target(biogrid_target_target_path: str):
             fs_type="local",
         )
         .filter(
-          (pc.field("Organism Interactor A") == 9606)
-          & (pc.field("Organism Interactor B") == 9606) 
+            (pc.field("Organism Interactor A") == 9606)
+            & (pc.field("Organism Interactor B") == 9606)
         )
         .select(
             [
@@ -29,33 +29,42 @@ def get_biogrid_target_target(biogrid_target_target_path: str):
             ]
         )
         .rename_columns(
-          [
-            "gene_id_1",
-            "gene_id_2",
-            "phenotypes",
-            "pubmed_evidence",
-            "score",
-            "source"
-          ]
+            [
+                "gene_id_1",
+                "gene_id_2",
+                "phenotypes",
+                "pubmed_evidence",
+                "score",
+                "source",
+            ]
         )
     )
 
-    #changing all "-" to null in all columns
+    # changing all "-" to null in all columns
     array_columns = []
     for column in biogrid_target_target.column_names:
-        new_column = pa.array([v if v != "-" else None for v in biogrid_target_target.column(column).to_pylist()])
+        new_column = pa.array(
+            [
+                v if v != "-" else None
+                for v in biogrid_target_target.column(column).to_pylist()
+            ]
+        )
         array_columns.append(new_column)
-    
-    #conver to pandas dataframe
-    biogrid_target_target = pa.table(array_columns, biogrid_target_target.column_names).to_pandas()
 
-    #groupby gene_id_1 and gene_id_2 and rank by highest score
-    biogrid_target_target["rank"] = biogrid_target_target.groupby(["gene_id_1", "gene_id_2"])["score"].rank("max")
+    # conver to pandas dataframe
+    biogrid_target_target = pa.table(
+        array_columns, biogrid_target_target.column_names
+    ).to_pandas()
 
-    #convert dataframe to pyarrow and filter rank = 1
-    biogrid_target_target = pa.table(biogrid_target_target).filter(
-        pc.field("rank") == 1
-    ).drop(["rank"])
+    # groupby gene_id_1 and gene_id_2 and rank by highest score
+    biogrid_target_target["rank"] = biogrid_target_target.groupby(
+        ["gene_id_1", "gene_id_2"]
+    )["score"].rank("max")
+
+    # convert dataframe to pyarrow and filter rank = 1
+    biogrid_target_target = (
+        pa.table(biogrid_target_target).filter(pc.field("rank") == 1).drop(["rank"])
+    )
 
     return biogrid_target_target
 
@@ -65,8 +74,8 @@ def run():
 
     biogrid = get_biogrid_target_target(biogrid_target_target_path)
 
-    #output path 
+    # output path
     output_path = "stage-0/biogrid_target_target.parquet"
 
-    #write out results
+    # write out results
     utils.write_parquet(biogrid, output_path)
