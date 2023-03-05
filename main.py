@@ -13,15 +13,18 @@ def run_pipeline_stage(stage: str, step: str):
             "entrez_genes": "entrez_genes.run",
             "uniprot_proteins": "uniprot_proteins.run",
             "disgenet":"disgenet.run",
+            "string_protein":"string_protein.run",
+        },
+        "1": {
             "ctd_target_disease": "ctd_target_disease.run",
             "psygene_target_disease": "psygene_target_disease.run",
             "ttd_target_disease": "ttd_target_disease.run",
             "jensenlab_target_disease":"jensenlab_target_disease.run",   
             "disgenet_target_disease":"disgenet_target_disease.run",
             "human_interactome_target_target":"human_interactome_target_target.run",
-            "string_protein":"string_protein.run",
             "string_target_target":"string_target_target.run",
-            "biogrid_target_target":"biogrid_target_target.run"
+            "biogrid_target_target":"biogrid_target_target.run",
+            "pathwaycommons_target_target":"pathwaycommons_target_target.run"
         }
     }
 

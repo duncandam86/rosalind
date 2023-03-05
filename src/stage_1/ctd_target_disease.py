@@ -1,6 +1,5 @@
 import pyarrow as pa
 import pyarrow.compute as pc
-from pyarrow import fs
 
 from ..utils import utils
 
