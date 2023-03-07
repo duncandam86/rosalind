@@ -161,6 +161,6 @@ def run():
     )
 
     # write file to s3
-    s3_path = "stage-0/jensenlab_target_disease.parquet"
+    s3_path = "stage-1/jensenlab_target_disease.parquet"
 
     utils.write_parquet(jensen_target_disease, s3_path)

@@ -52,6 +52,6 @@ def run():
     target_disease = psygene_target_disease(psygene_path)
 
     # write to S3
-    output = "stage-0/psygene_target_disease.parquet"
+    output = "stage-1/psygene_target_disease.parquet"
 
     utils.write_parquet(target_disease, output)

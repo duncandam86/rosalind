@@ -15,17 +15,19 @@ def run_pipeline_stage(stage: str, step: str):
             "disgenet":"disgenet.run",
             "string_protein":"string_protein.run",
         },
-        "1": {
+        "1_td": {
             "ctd_target_disease": "ctd_target_disease.run",
             "psygene_target_disease": "psygene_target_disease.run",
             "ttd_target_disease": "ttd_target_disease.run",
             "jensenlab_target_disease":"jensenlab_target_disease.run",   
             "disgenet_target_disease":"disgenet_target_disease.run",
+        },
+        "1_tt": {
             "human_interactome_target_target":"human_interactome_target_target.run",
             "string_target_target":"string_target_target.run",
             "biogrid_target_target":"biogrid_target_target.run",
             "pathwaycommons_target_target":"pathwaycommons_target_target.run"
-        }
+        },
     }
 
     stage_mod_name = f"src.{stage}"
@@ -69,7 +71,6 @@ if __name__ == "__main__":
         "--stage",
         help="Pipeline stage to run.",
         required=True,
-        choices=["0", "1", "2", "3"],
     )
     parser.add_argument(
         "--step",

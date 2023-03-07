@@ -75,7 +75,7 @@ def run():
     biogrid = get_biogrid_target_target(biogrid_target_target_path)
 
     # output path
-    output_path = "stage-0/biogrid_target_target.parquet"
+    output_path = "stage-1/biogrid_target_target.parquet"
 
     # write out results
     utils.write_parquet(biogrid, output_path)

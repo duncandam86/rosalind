@@ -125,6 +125,6 @@ def run():
     )
 
     # write to S3
-    output = "stage-0/ttd_target_disease.parquet"
+    output = "stage-1/ttd_target_disease.parquet"
 
     utils.write_parquet(target_disease, output)

@@ -69,7 +69,7 @@ def run():
     )
 
     # output
-    output_path = "stage-0/disgenet_target_disease.parquet"
+    output_path = "stage-1/disgenet_target_disease.parquet"
 
     # write to s3
     utils.write_parquet(target_disease, output_path)

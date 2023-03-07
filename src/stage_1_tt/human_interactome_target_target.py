@@ -96,7 +96,7 @@ def run():
     )
 
     # output path
-    output_path = "stage-0/human_interactome_target_target.parquet"
+    output_path = "stage-1/human_interactome_target_target.parquet"
 
     # write
     utils.write_parquet(human_interactome_target_target, output_path)

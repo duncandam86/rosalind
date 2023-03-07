@@ -67,7 +67,7 @@ def run():
     )
 
     # output path
-    output_path = "stage-0/string_target_target.parquet"
+    output_path = "stage-1/string_target_target.parquet"
 
     target_target = get_string_target_target(
         string_target_target_path, entrez_gene_path, string_protein_path

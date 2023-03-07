@@ -40,8 +40,7 @@ def run():
 
     # create table
     target_disease = ctd_target_disease(ctd_path)
-    print(target_disease[0:3])
     # write to S3
-    output = "stage-0/ctd_target_disease.parquet"
+    output = "stage-1/ctd_target_disease.parquet"
 
     utils.write_parquet(target_disease, output)
