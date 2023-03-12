@@ -1,5 +1,5 @@
 from ..utils import utils
-
+from prefect import task
 
 def get_disgenet_target_disease(
     disgenet_target_disease_path: str,
@@ -54,7 +54,7 @@ def get_disgenet_target_disease(
 
     return disgenet_target_disease
 
-
+@task(name="disgenet_target_disease")
 def run():
     # paths to files
     disgenet_target_disease_path = "stage-0/geneDiseaseNetwork.parquet"

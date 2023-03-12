@@ -1,5 +1,6 @@
 import pyarrow as pa
 import pyarrow.compute as pc
+from prefect import task
 
 from ..utils import utils
 
@@ -112,7 +113,7 @@ def get_entrez_gene(entrez_gene_path: str):
 
     return genes
 
-
+@task(name="jensenlab_target_disease")
 def run():
     knowledge_target_disease_path = (
         "downloads/target-disease/human_disease_knowledge_filtered.tsv"

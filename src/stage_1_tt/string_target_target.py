@@ -1,5 +1,6 @@
 import pyarrow as pa
 import pyarrow.compute as pc
+from prefect import task
 
 from ..utils import utils
 
@@ -58,7 +59,7 @@ def get_string_target_target(
 
     return target_target
 
-
+@task(name="string_target_target")
 def run():
     entrez_gene_path = "stage-0/entrez_genes.parquet"
     string_protein_path = "stage-0/string_proteins.parquet"

@@ -1,5 +1,6 @@
 import pyarrow as pa
 import pyarrow.compute as pc
+from prefect import task
 
 from ..utils import utils
 
@@ -34,7 +35,7 @@ def ctd_target_disease(
 
     return ctd_gene_disease_direct
 
-
+@task(name="ctd_target_disease")
 def run():
     ctd_path = "downloads/target-disease/CTD_genes_diseases.tsv.gz"
 

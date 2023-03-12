@@ -1,9 +1,8 @@
-from ..utils.log_utils import logger
-from ..utils import utils
-
 import pyarrow as pa
 import pyarrow.compute as pc
+from prefect import task
 
+from ..utils import utils
 
 def get_uniprot(uniprot_path: str) -> pa.table:
     """
@@ -42,7 +41,7 @@ def get_uniprot(uniprot_path: str) -> pa.table:
 
     return df_uniprot
 
-
+@task(name="uniprot_proteins")
 def run():
     uniprot_path = "downloads/uniprot/uniprot_human.tsv"
 

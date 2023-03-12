@@ -1,6 +1,6 @@
 import pyarrow as pa
-from pyarrow import fs
 import pyarrow.compute as pc
+from prefect import task
 
 from ..utils import utils
 
@@ -68,7 +68,7 @@ def get_biogrid_target_target(biogrid_target_target_path: str):
 
     return biogrid_target_target
 
-
+@task(name="biogrid_target_target")
 def run():
     biogrid_target_target_path = "downloads/target-target/BIOGRID-ALL-4.4.218.tab2.txt"
 

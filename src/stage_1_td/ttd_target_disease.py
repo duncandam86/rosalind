@@ -1,5 +1,6 @@
 import pyarrow as pa
 import pyarrow.compute as pc
+from prefect import task
 
 from ..utils import utils
 
@@ -108,7 +109,7 @@ def ttd_target(ttd_target_path: str):
 
     return ttd_target
 
-
+@task(name="ttd_target_disease")
 def run():
     ttd_path = "downloads/target-disease/P1-06-Target_disease.txt"
     ttd_target_path = "downloads/ttd/P2-01-TTD_uniprot_all.txt"

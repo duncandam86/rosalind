@@ -3,8 +3,7 @@ from ..utils import utils
 
 import pyarrow as pa
 import pyarrow.compute as pc
-from pyarrow import fs
-
+from prefect import task
 
 def get_gene_info(
     entrez_gene_info_path: str,
@@ -141,7 +140,7 @@ def get_gene_accession(entrez_accession_path: str):
 
     return gene_accession
 
-
+@task(name = "entrez_genes")
 def run():
     entrez_gene_info_path = "downloads/entrez/Homo_sapiens.gene_info.gz"
     hgnc_path = "downloads/hgnc/gene_with_protein_product.txt"

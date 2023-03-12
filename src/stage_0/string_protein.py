@@ -1,5 +1,6 @@
 import pyarrow as pa
 from ..utils import utils
+from prefect import task
 
 
 def get_string(string_protein_path: str):
@@ -20,7 +21,7 @@ def get_string(string_protein_path: str):
 
     return string_protein
 
-
+@task(name="string_protein")
 def run():
     string_path = "downloads/string/9606.protein.info.v11.5.txt.gz"
     # load string protein

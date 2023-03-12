@@ -1,5 +1,6 @@
 import pyarrow as pa
 import pyarrow.compute as pc
+from prefect import task
 
 from ..utils import utils
 
@@ -55,7 +56,7 @@ def get_pathwaycommons(pathwaycommons_path: str, gene_path: str):
 
     return pathwaycommons
 
-
+@task(name="pathwaycommons_target_target")
 def run():
     pathwaycommons_path = "downloads/target-target/PathwayCommons12.All.hgnc.txt.gz"
     gene_path = "stage-0/entrez_genes.parquet"

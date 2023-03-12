@@ -2,6 +2,7 @@ import pyarrow as pa
 import pyarrow.compute as pc
 from typing import List
 from pyarrow_ops import drop_duplicates
+from prefect import task
 
 from ..utils import utils
 
@@ -39,7 +40,7 @@ def get_human_interactome_target_target(paths: List[str]):
 
     return human_interactome_target_target
 
-
+@task(name="human_interactome_target_target")
 def run():
     entrez_gene_path = "stage-0/entrez_genes.parquet"
     human_interactome_hi_05_path = "downloads/target-target/H-I-05.tsv"

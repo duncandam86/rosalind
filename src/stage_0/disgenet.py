@@ -1,6 +1,7 @@
 import sqlite3
 import pandas.io.sql as sqlio
 import pyarrow as pa
+from prefect import task
 
 from ..utils import utils
 from ..utils import log_utils
@@ -39,11 +40,11 @@ def write_table(table: str, path: str, conn):
         # write to parquet
         utils.write_parquet(table, f"{path}.parquet")
     except:
-        s3 = utils.initiate_s3_filesystem()
+        s3 = utils.initiate_filesystem("s3")
         with s3.open_output_stream(f"rosalind-pipeline/{path}.tsv") as file:
             df_table.to_csv(file, index=None, sep="\t")
 
-
+@task(name = "disgenet")
 def run():
     disgenet_path = "/Users/duncandam/Documents/rosalind/resources/downloads/disgenet/disgenet_2020.db"
 

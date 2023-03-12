@@ -1,6 +1,7 @@
 import pyarrow as pa
 import pyarrow.compute as pc
 import pandas as pd
+from prefect import task
 
 from ..utils import utils
 
@@ -44,7 +45,7 @@ def psygene_target_disease(psygene_path: str):
 
     return psygene_target_disease
 
-
+@task(name="psygene_target_disease")
 def run():
     psygene_path = "downloads/target-disease/all_GeneDiseaseAssociations.tar.gz"
 

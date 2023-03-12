@@ -6,6 +6,10 @@ while getopts "t:" opt; do
   esac
 done
 
+#run stage-0
+STAGE_0=0
+STEPS_0=("entrez_genes" "uniprot_proteins" "disgenet" "string_protein")
+
 #run stage-1
 STAGE_TD=1_td
 STEPS_TD=("ctd_target_disease" "psygene_target_disease" "ttd_target_disease"
@@ -25,7 +29,6 @@ run!(){
     python3 main.py --stage $STAGE --step $STEP
   done
 }
-
 
 
 if [[ $TYPE == "1_td" ]]; then
